@@ -50,7 +50,7 @@ function getLangs(cb) {
           addLanguage(this.attribs.hreflang, this.attribs.href)
         })
 
-        workbook.xlsx.writeFile(file)
+        workbook.xlsx.writeFile('./uploads/excel-withlangs.xlsx')
         .then(function() {
           cb()
         });

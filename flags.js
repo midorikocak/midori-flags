@@ -50,7 +50,7 @@ function createVariableObject(keys, values) {
 
 module.exports = function(cb) {
 
-  workbook.xlsx.readFile('./uploads/excel.xlsx').then(function() {
+  workbook.xlsx.readFile('./uploads/excel-withlangs.xlsx').then(function() {
     var worksheet = workbook.getWorksheet(1);
     var languages = [];
     var variableNames = [];

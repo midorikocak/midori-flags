@@ -1,11 +1,11 @@
 var createError = require('http-errors');
 var express = require('express');
 var formidable = require('formidable');
+var flags = require('./flags');
+var empty = require('empty-folder');
 
-
-
-const session = require('express-session')
-const uuid = require('uuid/v4')
+const session = require('express-session');
+const uuid = require('uuid/v4');
 
 const FileStore = require('session-file-store')(session);
 var path = require('path');
@@ -16,19 +16,19 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
 
-var getlangs = require('./get-languages')
+var getlangs = require('./get-languages');
 
 var app = express();
 
 var app = express(),
-    exphbs = require("express-handlebars");
+    exphbs = require('express-handlebars');
 
-app.engine("hbs", exphbs({
-  defaultLayout: "layout",
-  extname: ".hbs",
-  helpers: require("./public/javascripts/helpers.js"), // same file that gets used on our client
-  partialsDir: "views/partials", // same as default, I just like to be explicit
-  layoutsDir: "views/layouts" // same as default, I just like to be explicit
+app.engine('hbs', exphbs({
+  defaultLayout: 'layout',
+  extname: '.hbs',
+  helpers: require('./public/javascripts/helpers.js'), // same file that gets used on our client
+  partialsDir: 'views/partials', // same as default, I just like to be explicit
+  layoutsDir: 'views/layouts' // same as default, I just like to be explicit
 }));
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
@@ -36,7 +36,7 @@ app.set('view engine', 'hbs');
 
 app.use(logger('dev'));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -45,31 +45,30 @@ app.use('/users', usersRouter);
 app.use('/login', loginRouter);
 // create the homepage route at '/'
 app.get('/health', (req, res) => {
-  const uniqueId = uuid()
-  res.send(`Hit home page. Received the unique id: ${uniqueId}\n`)
-})
-
+  const uniqueId = uuid();
+  res.send(`Hit home page. Received the unique id: ${uniqueId}\n`);
+});
 
 app.use(session({
   genid: (req) => {
-    console.log('Inside the session middleware')
-    console.log(req.sessionID)
-    return uuid() // use UUIDs for session IDs
+    console.log('Inside the session middleware');
+    console.log(req.sessionID);
+    return uuid(); // use UUIDs for session IDs
   },
   store: new FileStore(),
   secret: 'keyboard cat',
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
 }));
 
 // create the homepage route at '/'
 app.get('/session', (req, res) => {
-  console.log('Inside the homepage callback function')
-  console.log(req.sessionID)
-  res.send(`You hit home page!\n`)
+  console.log('Inside the homepage callback function');
+  console.log(req.sessionID);
+  res.send(`You hit home page!\n`);
 });
 
-app.post('/uploads', function(req, res) {
+app.post('/variables', function(req, res) {
   var form = new formidable.IncomingForm();
 
   form.parse(req);
@@ -79,10 +78,32 @@ app.post('/uploads', function(req, res) {
 
   form.on('file', function(name, file) {
     console.log('Uploaded ' + file.name);
+    getlangs(() => {
+      res.redirect('/languages');
+    });
+  });
 
-    getlangs(()=>{res.redirect("/templates");});
+  form.on('aborted', () => {
+    console.error('Request aborted by the user');
+  });
 
+  form.on('error', (err) => {
+    console.log(err);
+    console.error('Error', err);
+    throw err;
+  });
+});
 
+app.post('/language', function(req, res) {
+  var form = new formidable.IncomingForm();
+  form.parse(req);
+  form.on('fileBegin', function(name, file) {
+    file.path = __dirname + '/uploads/excel-withlangs.xlsx';
+  });
+
+  form.on('file', function(name, file) {
+    console.log('Uploaded ' + file.name);
+    res.redirect('/template');
   });
 
   form.on('aborted', () => {
@@ -95,12 +116,10 @@ app.post('/uploads', function(req, res) {
     throw err;
   });
 
-
 });
 
-app.post('/templates', function(req, res) {
+app.post('/template', function(req, res) {
   var form = new formidable.IncomingForm();
-
   form.parse(req);
   form.on('fileBegin', function(name, file) {
     file.path = __dirname + '/templates/template.hbs';
@@ -108,6 +127,7 @@ app.post('/templates', function(req, res) {
 
   form.on('file', function(name, file) {
     console.log('Uploaded ' + file.name);
+    res.redirect('/result');
   });
 
   form.on('aborted', () => {
@@ -119,10 +139,7 @@ app.post('/templates', function(req, res) {
     console.error('Error', err);
     throw err;
   });
-
-  res.redirect("/result")
 });
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

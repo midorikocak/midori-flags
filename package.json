@@ -17,13 +17,13 @@
     "http-errors": "~1.6.2",
     "morgan": "~1.9.0",
     "session-file-store": "^1.2.0",
-    "uuid": "^3.3.2"
-  },
-  "devDependencies": {
+    "uuid": "^3.3.2",
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2",
     "exceljs": "^1.7.0",
     "jszip": "^3.2.0",
     "nodemon": "^1.18.9"
+  },
+  "devDependencies": {
   }
 }
